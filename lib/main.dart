@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mughtarib_app/screens/registration_screen.dart';
 import 'package:mughtarib_app/screens/splash_screen.dart';
+import 'package:mughtarib_app/theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/posts_screen.dart';
 import 'screens/stays_screen.dart';
@@ -22,10 +23,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mughtarib App',
-      theme: ThemeData(primarySwatch: Colors.purple),
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
-         '/': (context) => SplashScreen(),
+        '/': (context) => SplashScreen(),
         '/home': (context) => HomeScreen(),
         '/posts': (context) => PostsScreen(),
         '/stays': (context) => StaysScreen(),

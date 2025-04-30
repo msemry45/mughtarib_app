@@ -1,44 +1,26 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _userIdController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool isLoading = false;
-  String errorMessage = '';
+  final _formKey = GlobalKey<FormState>();
+  final _userIdController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  void _login() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = '';
-    });
-
-    final userId = int.tryParse(_userIdController.text);
-    final password = _passwordController.text;
-    if (userId == null || password.isEmpty) {
-      setState(() {
-        errorMessage = 'الرجاء إدخال بيانات صحيحة';
-        isLoading = false;
-      });
-      return;
-    }
-    try {
-      final token = await AuthService().login(userId, password);
-      // بعد النجاح، يتم الانتقال إلى الشاشة الرئيسية وتمرير التوكن
-      Navigator.pushReplacementNamed(context, '/home', arguments: token);
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-      });
-    }
-    setState(() {
-      isLoading = false;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _authService.init();
   }
 
   @override
@@ -48,40 +30,102 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final userId = int.parse(_userIdController.text);
+      final password = _passwordController.text;
+
+      await _authService.login(userId, password);
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeScreen()),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("تسجيل الدخول"),
+        title: const Text('Login'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _userIdController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: "الرقم الجامعي"),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "كلمة المرور"),
-            ),
-            SizedBox(height: 20),
-            isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login, child: Text("تسجيل الدخول")),
-            if (errorMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Text(
-                  errorMessage,
-                  style: TextStyle(color: Colors.red),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: _userIdController,
+                decoration: const InputDecoration(
+                  labelText: 'User ID',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your user ID';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid user ID';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _login,
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('Login'),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

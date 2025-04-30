@@ -1,43 +1,99 @@
-# Miscellaneous
-*.class
+# ========================
+# General
+# ========================
 *.log
-*.pyc
+*.tmp
+*.temp
+*.bak
 *.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
-migrate_working_dir/
+*.DS_Store
+Thumbs.db
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ========================
+# Flutter
+# ========================
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
+build/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.symlinks/
+ios/Pods/
+ios/Runner.xcworkspace/
+macos/Pods/
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
 
-# Symbolication related
-app.*.symbols
+# Android specific
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/.cxx/
 
-# Obfuscation related
-app.*.map.json
+# iOS specific
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Pods/
+ios/Runner.xcworkspace
+ios/build/
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# macOS specific
+macos/Runner/GeneratedPluginRegistrant.swift
+
+# Web
+web/.dart_tool/
+
+# ========================
+# ASP.NET Core
+# ========================
+**/bin/
+**/obj/
+**/out/
+**/*.user
+**/*.suo
+**/*.cache
+**/*.pdb
+*.vs/
+*.vscode/
+*.idea/
+.vs/
+*.dbmdl
+*.db-shm
+*.db-wal
+
+# Entity Framework
+**/*.mdf
+**/*.ldf
+
+# User secrets
+secrets.json
+
+# ========================
+# Node.js (if any tools use it)
+node_modules/
+
+# ========================
+# IDE/editor configs
+# ========================
+.vscode/
+.idea/
+*.iml
+*.sublime*
+
+# ========================
+# OS generated
+# ========================
+*.DS_Store
+*.AppleDouble
+Icon?
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================
+# Git
+# ========================
+*.orig
