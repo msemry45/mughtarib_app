@@ -1,11 +1,12 @@
 import 'dart:convert';
 import '../services/api_service.dart';
-import '../models/user.dart';
+import '../models/user.dart' as app_user;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   final ApiService _apiService = ApiService();
-  User? _currentUser;
+  app_user.User? _currentUser;
   String? _sessionToken;
   DateTime? _tokenExpiry;
 
@@ -17,7 +18,7 @@ class AuthService {
 
   // Get current user
   bool get isLoggedIn => _currentUser != null && _sessionToken != null;
-  User? get currentUser => _currentUser;
+  app_user.User? get currentUser => _currentUser;
   String? get sessionToken => _sessionToken;
 
   // Load session from storage
@@ -30,12 +31,12 @@ class AuthService {
 
       if (token != null && userJson != null && expiry != null) {
         _sessionToken = token;
-        _currentUser = User.fromJson(jsonDecode(userJson));
+        _currentUser = app_user.User.fromJson(jsonDecode(userJson));
         _tokenExpiry = DateTime.parse(expiry);
 
         if (_isTokenExpired()) {
           await logout();
-    } else {
+        } else {
           await _refreshToken();
         }
       }
@@ -79,50 +80,89 @@ class AuthService {
     }
   }
 
-  // Login
-  Future<User> login(int userId, String password) async {
+  // Login with university ID and password
+  Future<Map<String, dynamic>> login(String userId, String password) async {
     try {
-      final response = await _apiService.login(userId, password);
-      _currentUser = User.fromJson(response['user']);
-      _sessionToken = response['token'];
-      _tokenExpiry = DateTime.now().add(const Duration(hours: 1));
-      await _saveSession();
-      return _currentUser!;
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userId': userId,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _sessionToken = data['token'];
+        _tokenExpiry = DateTime.now().add(const Duration(hours: 1));
+        _currentUser = await getUserProfile();
+        await _saveSession();
+        return {'success': true, 'message': 'تم تسجيل الدخول بنجاح'};
+      } else {
+        final error = jsonDecode(response.body);
+        return {'success': false, 'message': error['message'] ?? 'فشل تسجيل الدخول'};
+      }
     } catch (e) {
-      throw Exception('Login failed: $e');
+      return {'success': false, 'message': 'حدث خطأ أثناء تسجيل الدخول'};
     }
   }
 
-  // Register
-  Future<User> register({
-    required int userID,
+  // Register new user
+  Future<Map<String, dynamic>> registerUser({
+    required String userId,
     required String firstName,
     required String lastName,
     required String phoneNumber,
+    required String email,
     required String password,
-    String? email,
   }) async {
     try {
-      final response = await _apiService.post('Students', {
-        'userID': userID,
-        'firstName': firstName,
-        'lastName': lastName,
-        'phoneNumber': phoneNumber,
-        'password': password,
-        'email': email,
-        'role': '',
-      });
-      return User.fromJson(response);
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userId': userId,
+          'firstName': firstName,
+          'lastName': lastName,
+          'phoneNumber': phoneNumber,
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _sessionToken = data['token'];
+        _tokenExpiry = DateTime.now().add(const Duration(hours: 1));
+        _currentUser = await getUserProfile();
+        await _saveSession();
+        return {'success': true, 'message': 'تم التسجيل بنجاح'};
+      } else {
+        final error = jsonDecode(response.body);
+        return {'success': false, 'message': error['message'] ?? 'فشل التسجيل'};
+      }
     } catch (e) {
-      throw Exception('Registration failed: $e');
+      return {'success': false, 'message': 'حدث خطأ أثناء التسجيل'};
+    }
+  }
+
+  // Reset password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _apiService.post('Auth/reset-password', {
+        'email': email,
+      });
+    } catch (e) {
+      throw e.toString();
     }
   }
 
   // Get user profile
-  Future<User> getUserProfile() async {
+  Future<app_user.User> getUserProfile() async {
     try {
       final response = await _apiService.get('Students/${_apiService.userId}');
-      _currentUser = User.fromJson(response);
+      _currentUser = app_user.User.fromJson(response);
       await _saveSession();
       return _currentUser!;
     } catch (e) {
@@ -131,7 +171,7 @@ class AuthService {
   }
 
   // Update user profile
-  Future<User> updateUserProfile({
+  Future<app_user.User> updateUserProfile({
     String? firstName,
     String? lastName,
     String? phoneNumber,
@@ -151,134 +191,11 @@ class AuthService {
       if (preferences != null) data['preferences'] = preferences;
 
       final response = await _apiService.put('Students/${_apiService.userId}', data);
-      _currentUser = User.fromJson(response);
+      _currentUser = app_user.User.fromJson(response);
       await _saveSession();
       return _currentUser!;
     } catch (e) {
       throw Exception('Failed to update profile: $e');
-    }
-  }
-
-  // Upload profile picture
-  Future<String> uploadProfilePicture(String imagePath) async {
-    try {
-      final response = await _apiService.post('Students/upload-profile-picture', {
-        'imagePath': imagePath,
-      });
-      return response['imageUrl'];
-    } catch (e) {
-      throw Exception('Failed to upload profile picture: $e');
-    }
-  }
-
-  // Add address
-  Future<User> addAddress(String address) async {
-    try {
-      final response = await _apiService.post('Students/add-address', {
-        'address': address,
-      });
-      _currentUser = User.fromJson(response);
-      await _saveSession();
-      return _currentUser!;
-    } catch (e) {
-      throw Exception('Failed to add address: $e');
-    }
-  }
-
-  // Remove address
-  Future<User> removeAddress(String address) async {
-    try {
-      final response = await _apiService.post('Students/remove-address', {
-        'address': address,
-      });
-      _currentUser = User.fromJson(response);
-      await _saveSession();
-      return _currentUser!;
-    } catch (e) {
-      throw Exception('Failed to remove address: $e');
-    }
-  }
-
-  // Request email verification
-  Future<void> requestEmailVerification() async {
-    try {
-      await _apiService.post('Auth/request-email-verification', {});
-    } catch (e) {
-      throw Exception('Failed to request email verification: $e');
-    }
-  }
-
-  // Verify email
-  Future<void> verifyEmail(String token) async {
-    try {
-      await _apiService.post('Auth/verify-email', {'token': token});
-      _currentUser = _currentUser?.copyWith(isEmailVerified: true);
-      await _saveSession();
-    } catch (e) {
-      throw Exception('Failed to verify email: $e');
-    }
-  }
-
-  // Request phone verification
-  Future<void> requestPhoneVerification() async {
-    try {
-      await _apiService.post('Auth/request-phone-verification', {});
-    } catch (e) {
-      throw Exception('Failed to request phone verification: $e');
-    }
-  }
-
-  // Verify phone
-  Future<void> verifyPhone(String code) async {
-    try {
-      await _apiService.post('Auth/verify-phone', {'code': code});
-      _currentUser = _currentUser?.copyWith(isPhoneVerified: true);
-      await _saveSession();
-    } catch (e) {
-      throw Exception('Failed to verify phone: $e');
-    }
-  }
-
-  // Request password reset
-  Future<void> requestPasswordReset(String email) async {
-    try {
-      await _apiService.post('Auth/request-password-reset', {'email': email});
-    } catch (e) {
-      throw Exception('Failed to request password reset: $e');
-    }
-  }
-
-  // Reset password
-  Future<void> resetPassword(String token, String newPassword) async {
-    try {
-      await _apiService.post('Auth/reset-password', {
-        'token': token,
-        'newPassword': newPassword,
-      });
-    } catch (e) {
-      throw Exception('Failed to reset password: $e');
-    }
-  }
-
-  // Change password
-  Future<void> changePassword(String currentPassword, String newPassword) async {
-    try {
-      await _apiService.post('Auth/change-password', {
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
-      });
-    } catch (e) {
-      throw Exception('Failed to change password: $e');
-    }
-  }
-
-  // Delete user account
-  Future<void> deleteUserAccount() async {
-    try {
-      await _apiService.delete('Students/${_apiService.userId}');
-      await logout();
-    } catch (e) {
-      throw Exception('Failed to delete account: $e');
     }
   }
 

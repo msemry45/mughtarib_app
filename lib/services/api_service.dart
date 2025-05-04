@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import '../models/student.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5087/api';
+  static const String baseUrl = 'http://10.0.2.2:5087/api';  // For Android Emulator
+  // static const String baseUrl = 'http://localhost:5087/api';  // For iOS Simulator
   String? _token;
   int? _userId;
   DateTime? _tokenExpiry;
@@ -328,6 +330,23 @@ class ApiService {
       _token = null;
       _userId = null;
       _tokenExpiry = null;
+    }
+  }
+  Future<List<Student>> fetchStudents() async {
+    final token = _token;
+    final url = Uri.parse('$baseUrl/api/Students');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Student.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load students');
     }
   }
 }

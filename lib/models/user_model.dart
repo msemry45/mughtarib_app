@@ -22,6 +22,11 @@ class UserModel {
   });
 
   factory UserModel.fromFirestore(Map<String, dynamic> data, String uid) {
+    DateTime? _toDate(dynamic value) {
+      if (value is Timestamp) return value.toDate();
+      if (value is DateTime) return value;
+      return null;
+    }
     return UserModel(
       uid: uid,
       email: data['email'] ?? '',
@@ -29,8 +34,8 @@ class UserModel {
       photoURL: data['photoURL'],
       phoneNumber: data['phoneNumber'],
       preferences: data['preferences'],
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      lastLoginAt: (data['lastLoginAt'] as Timestamp).toDate(),
+      createdAt: _toDate(data['createdAt']) ?? DateTime.now(),
+      lastLoginAt: _toDate(data['lastLoginAt']) ?? DateTime.now(),
     );
   }
 
@@ -41,8 +46,8 @@ class UserModel {
       'photoURL': photoURL,
       'phoneNumber': phoneNumber,
       'preferences': preferences,
-      'createdAt': createdAt,
-      'lastLoginAt': lastLoginAt,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'lastLoginAt': Timestamp.fromDate(lastLoginAt),
     };
   }
 } 
