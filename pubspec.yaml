@@ -38,6 +38,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   google_maps_flutter: ^2.5.0
   location: ^5.0.3
+  jose: ^0.3.0
   # Firebase
   firebase_core: ^2.24.2
   cloud_firestore: ^4.13.0
@@ -46,6 +47,7 @@ dependencies:
   firebase_messaging: ^14.7.0
   firebase_analytics: ^10.7.0
   google_sign_in: ^6.1.5
+  dialogflow_flutter_plus: ^0.0.1
 
 dev_dependencies:
   flutter_test:
@@ -74,9 +76,9 @@ flutter:
     - images/mughtarib_logo.png
     - images/mughtarib_logo.jpg
     - images/
+    - assets/mughtarib-feb40-65f5014b2b6d.json
 
   #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

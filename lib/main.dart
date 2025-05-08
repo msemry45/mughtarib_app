@@ -29,6 +29,7 @@ import 'screens/settings_screen.dart';
 import 'services/firebase_service.dart';
 import 'screens/host_register_screen.dart';
 import 'screens/agency_register_screen.dart';
+import 'screens/chat_screen.dart';
 
 // Handle background messages
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -160,6 +161,7 @@ class _MyAppState extends State<MyApp> {
             ),
             '/hostRegister': (context) => HostRegisterScreen(),
             '/agencyRegister': (context) => AgencyRegisterScreen(),
+            '/chat': (context) => ChatScreen(),
           },
         );
       },

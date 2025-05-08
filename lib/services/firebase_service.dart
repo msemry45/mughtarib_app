@@ -140,10 +140,28 @@ class FirebaseService {
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       String? token = await _messaging.getToken();
       if (token != null && _auth.currentUser != null) {
-        await _firestore
+        // التحقق من وجود وثيقة المستخدم أولاً
+        DocumentSnapshot userDoc = await _firestore
             .collection('users')
             .doc(_auth.currentUser!.uid)
-            .update({'fcmToken': token});
+            .get();
+            
+        if (userDoc.exists) {
+          // تحديث الوثيقة إذا كانت موجودة
+          await userDoc.reference.update({'fcmToken': token});
+        } else {
+          // إنشاء وثيقة جديدة إذا لم تكن موجودة
+          await _firestore
+              .collection('users')
+              .doc(_auth.currentUser!.uid)
+              .set({
+                'fcmToken': token,
+                'email': _auth.currentUser!.email,
+                'name': _auth.currentUser!.displayName,
+                'photoURL': _auth.currentUser!.photoURL,
+                'createdAt': FieldValue.serverTimestamp(),
+              });
+        }
       }
     }
   }
