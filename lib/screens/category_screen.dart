@@ -14,29 +14,73 @@ class CategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('التصنيفات', style: GoogleFonts.cairo()),
-        backgroundColor: const Color(0xFF9C27B0),
+        title: Text(
+          'التصنيفات',
+          style: GoogleFonts.cairo(
+            color: colorScheme.onPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: colorScheme.primary,
       ),
-      body: ListView.builder(
+      body: GridView.builder(
         padding: const EdgeInsets.all(16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.5,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
           return Card(
-            margin: const EdgeInsets.only(bottom: 16),
+            elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: ListTile(
-              leading: Icon(category['icon'], color: const Color(0xFF9C27B0), size: 32),
-              title: Text(
-                category['title'],
-                style: GoogleFonts.cairo(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+            child: InkWell(
               onTap: () => Navigator.pushNamed(context, category['route']),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary,
+                      colorScheme.primary.withOpacity(0.8),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      category['icon'],
+                      color: colorScheme.onPrimary,
+                      size: 32,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      category['title'],
+                      style: GoogleFonts.cairo(
+                        color: colorScheme.onPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },

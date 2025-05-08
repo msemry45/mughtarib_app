@@ -53,48 +53,48 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
-        final result = await _authService.login(
-          _studentIdController.text, // الرقم الجامعي
-          _passwordController.text,
-        );
-        if (result['success']) {
-          Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['message'] ?? 'فشل تسجيل الدخول')),
-          );
-        }
-      } catch (e) {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final authService = AuthService();
+      final response = await authService.loginStudent(
+        email: _studentIdController.text,
+        password: _passwordController.text,
+      );
+      if (response['success']) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+          SnackBar(content: Text(response['message'] ?? 'فشل تسجيل الدخول')),
         );
-      } finally {
-        setState(() => _isLoading = false);
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onBackground;
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF9C27B0),
-                  Color(0xFF7B1FA2),
-                ],
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        title: Text(
+          'تسجيل دخول الطلاب',
+          style: GoogleFonts.cairo(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
               ),
             ),
+        backgroundColor: colorScheme.primary,
+        centerTitle: true,
           ),
-          SafeArea(
+      body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -102,41 +102,70 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 40),
+                SizedBox(height: 32),
+                Center(
+                  child: Image.asset(
+                    'images/mughtarib_logo.png',
+                    height: 100,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Center(
+                  child: Icon(
+                    Icons.school,
+                    size: 80,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  'مرحباً بالطالب!',
+                  style: GoogleFonts.cairo(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
                     Text(
-                      'تسجيل دخول الطالب',
-                      style: _titleStyle,
+                  'يرجى تسجيل الدخول للمتابعة',
+                  style: GoogleFonts.cairo(
+                    fontSize: 16,
+                    color: textColor.withOpacity(0.7),
+                  ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 40),
+                SizedBox(height: 32),
                     TextFormField(
                       controller: _studentIdController,
-                      decoration: _inputDecoration.copyWith(
+                  decoration: InputDecoration(
                         labelText: 'الرقم الجامعي',
-                        prefixIcon: const Icon(Icons.badge, color: Colors.white70),
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
                       ),
-                      style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: textColor),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'الرجاء إدخال الرقم الجامعي';
                         }
-                        if (value.length < 3) {
-                          return 'الرقم الجامعي غير صحيح';
+                    if (!RegExp(r'^\d+$').hasMatch(value)) {
+                      return 'الرقم الجامعي يجب أن يحتوي على أرقام فقط';
                         }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
-                      decoration: _inputDecoration.copyWith(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                    prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.white70,
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: colorScheme.primary,
                           ),
                           onPressed: () {
                             setState(() {
@@ -145,8 +174,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           },
                         ),
                       ),
-                      style: const TextStyle(color: Colors.white),
-                      obscureText: _obscurePassword,
+                  style: TextStyle(color: textColor),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'الرجاء إدخال كلمة المرور';
@@ -157,48 +185,56 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 30),
+                SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF9C27B0),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: _isLoading
-                          ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9C27B0)),
+                      ? CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                             )
                           : Text(
                               'تسجيل الدخول',
                               style: GoogleFonts.cairo(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                            color: colorScheme.onPrimary,
                               ),
                             ),
                     ),
-                    const SizedBox(height: 20),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'ليس لديك حساب؟',
+                      style: GoogleFonts.cairo(
+                        color: colorScheme.primary,
+                      ),
+                    ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
+                      onPressed: () => Navigator.pushNamed(context, '/register'),
                       child: Text(
-                        'ليس لديك حساب؟ سجل الآن',
+                        'سجل الآن',
                         style: GoogleFonts.cairo(
-                          color: Colors.white,
-                          fontSize: 16,
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

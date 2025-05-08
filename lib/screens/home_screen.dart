@@ -81,43 +81,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onBackground;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            _buildSliverAppBar(context),
+            _buildSliverAppBar(context, colorScheme, textColor),
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  _buildSearchBar(context),
-                  _buildNearbySection(context),
-                  _buildOrderSection(context),
-                  _buildDailyOffersSection(context),
+                  _buildSearchBar(context, colorScheme, textColor),
+                  _buildNearbySection(context, colorScheme, textColor),
+                  _buildOrderSection(context, colorScheme, textColor),
+                  _buildDailyOffersSection(context, colorScheme, textColor),
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: _buildBottomNavigationBar(context, colorScheme, textColor),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/messages'),
-        child: const Icon(Icons.chat, color: Colors.white),
+        child: const Icon(Icons.chat),
         elevation: 4,
-        backgroundColor: const Color(0xFF9C27B0),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
+  Widget _buildSliverAppBar(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return SliverAppBar(
       expandedHeight: 120.0,
       floating: true,
       pinned: true,
       elevation: 0,
-      backgroundColor: const Color(0xFF9C27B0),
+      backgroundColor: colorScheme.primary,
       flexibleSpace: FlexibleSpaceBar(
         title: Row(
           children: [
@@ -132,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Text(
                 'المملكة العربية السعودية',
-                style: GoogleFonts.cairo(fontSize: 16),
+                style: GoogleFonts.cairo(fontSize: 16, color: textColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -154,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -173,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onChanged: _handleSearch,
         decoration: InputDecoration(
           hintText: 'ابحث عن سكن...',
-          hintStyle: GoogleFonts.cairo(),
+          hintStyle: GoogleFonts.cairo(color: textColor),
           prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -191,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNearbySection(BuildContext context) {
+  Widget _buildNearbySection(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return Column(
       children: [
         Padding(
@@ -201,14 +204,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'قريب من موقعك',
-                style: _titleStyle,
+                style: _titleStyle.copyWith(color: textColor),
               ),
               TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/property'),
                 child: Text(
                   'عرض الكل',
                   style: GoogleFonts.cairo(
-                    color: const Color(0xFF9C27B0),
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -228,6 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.apartment,
                 () => Navigator.pushNamed(context, '/property'),
                 context,
+                textColor,
               ),
               _buildNearbyCard(
                 'عائلة مضيفة',
@@ -235,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.home,
                 () => Navigator.pushNamed(context, '/property'),
                 context,
+                textColor,
               ),
             ],
           ),
@@ -243,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNearbyCard(String title, String distance, IconData icon, VoidCallback onTap, BuildContext context) {
+  Widget _buildNearbyCard(String title, String distance, IconData icon, VoidCallback onTap, BuildContext context, Color textColor) {
     return SizedBox(
       width: 160,
       child: Card(
@@ -262,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   child: Text(
                     title,
-                    style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: GoogleFonts.cairo(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF9C27B0)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -271,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   child: Text(
                     distance,
-                    style: _subtitleStyle,
+                    style: GoogleFonts.cairo(color: textColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -284,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildOrderSection(BuildContext context) {
+  Widget _buildOrderSection(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -292,35 +297,24 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             'ماذا تريد أن تطلب؟',
-            style: _titleStyle,
+            style: _titleStyle.copyWith(color: textColor),
           ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildOrderItem(context, 'سكن', Icons.home_work, '/property'),
-              _buildOrderItem(context, 'مطعم', Icons.restaurant, '/restaurants'),
-              _buildOrderItem(context, 'استكشاف', Icons.explore, '/explore'),
+              _buildOrderItem(context, 'سكن', Icons.home_work, '/property', textColor),
+              _buildOrderItem(context, 'مطعم', Icons.restaurant, '/restaurants', textColor),
+              _buildOrderItem(context, 'استكشاف', Icons.explore, '/explore', textColor),
             ],
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/students'),
-            child: Text('عرض الطلاب', style: GoogleFonts.cairo()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF9C27B0),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildOrderItem(BuildContext context, String title, IconData icon, String route) {
+  Widget _buildOrderItem(BuildContext context, String title, IconData icon, String route, Color textColor) {
     return InkWell(
       onTap: () => Navigator.pushNamed(context, route),
       child: Column(
@@ -328,12 +322,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF9C27B0).withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF9C27B0),
+              color: Theme.of(context).colorScheme.primary,
               size: 32,
             ),
           ),
@@ -342,6 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title,
             style: GoogleFonts.cairo(
               fontWeight: FontWeight.w500,
+              color: textColor,
             ),
           ),
         ],
@@ -349,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDailyOffersSection(BuildContext context) {
+  Widget _buildDailyOffersSection(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -357,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'عروض اليوم',
-            style: _titleStyle,
+            style: _titleStyle.copyWith(color: textColor),
           ),
         ),
         const SizedBox(height: 16),
@@ -371,11 +366,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 'خصم 20%',
                 'عرض خاص على السكن الطلابي',
                 context,
+                textColor,
               ),
               _buildOfferCard(
                 'خصم 15%',
                 'عرض خاص على المطاعم',
                 context,
+                textColor,
               ),
             ],
           ),
@@ -385,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildOfferCard(String discount, String description, BuildContext context) {
+  Widget _buildOfferCard(String discount, String description, BuildContext context, Color textColor) {
     return SizedBox(
       width: 200,
       child: Card(
@@ -420,6 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.cairo(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    color: const Color(0xFF9C27B0),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -432,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
+  Widget _buildBottomNavigationBar(BuildContext context, ColorScheme colorScheme, Color textColor) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8,
@@ -444,16 +442,16 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                _buildNavBarItem(Icons.home, 'الرئيسية', true, () {}, context),
+                _buildNavBarItem(Icons.home, 'الرئيسية', true, () {}, context, colorScheme, textColor),
                 const SizedBox(width: 32),
-                _buildNavBarItem(Icons.post_add, 'الإعلانات', false, () => Navigator.pushNamed(context, '/posts'), context),
+                _buildNavBarItem(Icons.post_add, 'الإعلانات', false, () => Navigator.pushNamed(context, '/posts'), context, colorScheme, textColor),
               ],
             ),
             Row(
               children: [
-                _buildNavBarItem(Icons.hotel, 'الإقامات', false, () => Navigator.pushNamed(context, '/stays'), context),
+                _buildNavBarItem(Icons.hotel, 'الإقامات', false, () => Navigator.pushNamed(context, '/stays'), context, colorScheme, textColor),
                 const SizedBox(width: 32),
-                _buildNavBarItem(Icons.person, 'الملف الشخصي', false, () => Navigator.pushNamed(context, '/profile'), context),
+                _buildNavBarItem(Icons.person, 'الملف الشخصي', false, () => Navigator.pushNamed(context, '/profile'), context, colorScheme, textColor),
               ],
             ),
           ],
@@ -462,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavBarItem(IconData icon, String label, bool isSelected, VoidCallback onTap, BuildContext context) {
+  Widget _buildNavBarItem(IconData icon, String label, bool isSelected, VoidCallback onTap, BuildContext context, ColorScheme colorScheme, Color textColor) {
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -470,12 +468,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(
             icon,
-            color: isSelected ? const Color(0xFF9C27B0) : Colors.grey,
+            color: isSelected ? colorScheme.primary : Colors.grey,
           ),
           Text(
             label,
             style: GoogleFonts.cairo(
-              color: isSelected ? const Color(0xFF9C27B0) : Colors.grey,
+              color: isSelected ? colorScheme.primary : Colors.grey,
               fontSize: 12,
             ),
           ),

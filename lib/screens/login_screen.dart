@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/firebase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  final FirebaseService _firebaseService = FirebaseService();
 
   @override
   void dispose() {
@@ -43,6 +45,22 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final userCredential = await _firebaseService.signInWithGoogle();
+      if (userCredential.user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -101,7 +119,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onBackground;
     return Scaffold(
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        title: Text(
+          'تسجيل الدخول',
+          style: GoogleFonts.cairo(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: colorScheme.primary,
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(24),
@@ -110,12 +142,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: 48),
+                SizedBox(height: 40),
                 Center(
                   child: Icon(
-                    Icons.person,
+                    Icons.lock_outline,
                     size: 80,
-                    color: Color(0xFF9C27B0),
+                    color: colorScheme.primary,
                   ),
                 ),
                 SizedBox(height: 24),
@@ -124,16 +156,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.cairo(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF9C27B0),
+                    color: textColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'قم بتسجيل الدخول للمتابعة',
+                  'يرجى تسجيل الدخول للمتابعة',
                   style: GoogleFonts.cairo(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: textColor.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -142,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _userIdController,
                   decoration: InputDecoration(
                     labelText: 'الرقم الجامعي',
-                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -152,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                   keyboardType: TextInputType.number,
@@ -172,11 +204,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'كلمة المرور',
-                    prefixIcon: Icon(Icons.lock_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.grey,
+                        color: colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -193,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                   validator: (value) {
@@ -214,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       'نسيت كلمة المرور؟',
                       style: GoogleFonts.cairo(
-                        color: Color(0xFF9C27B0),
+                        color: colorScheme.primary,
                       ),
                     ),
                   ),
@@ -223,28 +255,60 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF9C27B0),
+                    backgroundColor: colorScheme.primary,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: _isLoading
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? CircularProgressIndicator(color: Colors.white)
                       : Text(
                           'تسجيل الدخول',
                           style: GoogleFonts.cairo(
                             fontSize: 16,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'أو',
+                        style: GoogleFonts.cairo(
+                          color: textColor.withOpacity(0.7),
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(color: colorScheme.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: Image.asset(
+                    'images/google_logo.png',
+                    height: 24,
+                  ),
+                  label: Text(
+                    'تسجيل الدخول باستخدام Google',
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      color: textColor,
+                    ),
+                  ),
                 ),
                 SizedBox(height: 16),
                 Row(
@@ -253,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'ليس لديك حساب؟',
                       style: GoogleFonts.cairo(
-                        color: Colors.grey[600],
+                        color: colorScheme.primary,
                       ),
                     ),
                     TextButton(
@@ -261,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'سجل الآن',
                         style: GoogleFonts.cairo(
-                          color: Color(0xFF9C27B0),
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

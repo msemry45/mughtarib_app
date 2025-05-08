@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import '../models/student.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/student_model.dart';
 
 class ApiService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static const String baseUrl = 'http://10.0.2.2:5087/api';  // For Android Emulator
   // static const String baseUrl = 'http://localhost:5087/api';  // For iOS Simulator
   String? _token;
@@ -332,21 +334,50 @@ class ApiService {
       _tokenExpiry = null;
     }
   }
-  Future<List<Student>> fetchStudents() async {
-    final token = _token;
-    final url = Uri.parse('$baseUrl/api/Students');
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((json) => Student.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load students');
+
+  // Firestore Student Methods
+  Future<List<Student>> getAllStudents() async {
+    try {
+      final QuerySnapshot snapshot = await _firestore.collection('students').get();
+      return snapshot.docs.map((doc) => Student.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to load students: $e');
+    }
+  }
+
+  Future<Student?> getStudentById(String userID) async {
+    try {
+      final DocumentSnapshot doc = await _firestore.collection('students').doc(userID).get();
+      if (doc.exists) {
+        return Student.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to load student: $e');
+    }
+  }
+
+  Future<void> addStudent(Student student) async {
+    try {
+      await _firestore.collection('students').doc(student.userID).set(student.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to add student: $e');
+    }
+  }
+
+  Future<void> updateStudent(Student student) async {
+    try {
+      await _firestore.collection('students').doc(student.userID).update(student.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update student: $e');
+    }
+  }
+
+  Future<void> deleteStudent(String userID) async {
+    try {
+      await _firestore.collection('students').doc(userID).delete();
+    } catch (e) {
+      throw Exception('Failed to delete student: $e');
     }
   }
 }

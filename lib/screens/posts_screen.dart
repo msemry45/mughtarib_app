@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/review_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PostsScreen extends StatefulWidget {
   @override
@@ -242,5 +244,48 @@ class _PostsScreenState extends State<PostsScreen> {
   void dispose() {
     _postController.dispose();
     super.dispose();
+  }
+}
+
+class ReviewsScreen extends StatelessWidget {
+  Future<List<Review>> fetchReviews() async {
+    final snapshot = await FirebaseFirestore.instance.collection('reviews').get();
+    return snapshot.docs.map((doc) => Review.fromJson(doc.data())).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('التقييمات'),
+      ),
+      body: FutureBuilder<List<Review>>(
+        future: fetchReviews(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('حدث خطأ أثناء جلب التقييمات'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('لا توجد تقييمات متاحة'));
+          }
+          final reviews = snapshot.data!;
+          return ListView.builder(
+            itemCount: reviews.length,
+            itemBuilder: (context, index) {
+              final review = reviews[index];
+              return ListTile(
+                title: Text('تقييم: ${review.rating}'),
+                subtitle: Text(review.comment),
+                trailing: Text(review.userType),
+                onTap: () {
+                  // يمكنك هنا فتح صفحة تفاصيل التقييم
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }

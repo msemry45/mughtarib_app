@@ -39,22 +39,22 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onBackground;
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF9C27B0),
-                  Color(0xFF7B1FA2),
-                ],
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        title: Text(
+          'تسجيل دخول المطعم',
+          style: GoogleFonts.cairo(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
               ),
             ),
+        backgroundColor: colorScheme.primary,
+        centerTitle: true,
           ),
-          SafeArea(
+      body: SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(24),
               child: Form(
@@ -63,32 +63,40 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 40),
+                Center(
+                  child: Icon(
+                    Icons.restaurant,
+                    size: 80,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                SizedBox(height: 24),
                     Text(
-                      'تسجيل دخول المطعم',
+                  'مرحباً بك في تسجيل دخول المطعم!',
                       style: GoogleFonts.cairo(
-                        fontSize: 28,
+                    fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    color: textColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'يرجى تسجيل الدخول للمتابعة',
+                  style: GoogleFonts.cairo(
+                    fontSize: 16,
+                    color: textColor.withOpacity(0.7),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 40),
+                SizedBox(height: 32),
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
                         labelText: 'البريد الإلكتروني',
-                        labelStyle: GoogleFonts.cairo(color: Colors.white70),
-                        prefixIcon: Icon(Icons.email, color: Colors.white70),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white30),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                    prefixIcon: Icon(Icons.email, color: colorScheme.primary),
                       ),
-                      style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: textColor),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -100,17 +108,17 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 20),
+                SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
+                  obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        labelStyle: GoogleFonts.cairo(color: Colors.white70),
-                        prefixIcon: Icon(Icons.lock, color: Colors.white70),
+                    prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.white70,
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: colorScheme.primary,
                           ),
                           onPressed: () {
                             setState(() {
@@ -118,17 +126,8 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
                             });
                           },
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white30),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
-                      style: TextStyle(color: Colors.white),
-                      obscureText: _obscurePassword,
+                  style: TextStyle(color: textColor),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'الرجاء إدخال كلمة المرور';
@@ -139,12 +138,12 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 30),
+                SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Color(0xFF9C27B0),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -152,35 +151,43 @@ class _RestaurantLoginScreenState extends State<RestaurantLoginScreen> {
                       ),
                       child: _isLoading
                           ? CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9C27B0)),
+                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                             )
                           : Text(
                               'تسجيل الدخول',
                               style: GoogleFonts.cairo(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                            color: colorScheme.onPrimary,
                               ),
                             ),
                     ),
-                    SizedBox(height: 20),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'ليس لديك حساب؟',
+                      style: GoogleFonts.cairo(
+                        color: colorScheme.primary,
+                      ),
+                    ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
+                      onPressed: () => Navigator.pushNamed(context, '/register'),
                       child: Text(
-                        'ليس لديك حساب؟ سجل الآن',
+                        'سجل الآن',
                         style: GoogleFonts.cairo(
-                          color: Colors.white,
-                          fontSize: 16,
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

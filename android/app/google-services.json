@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "240289797566",
+    "project_id": "mughtarib-feb40",
+    "storage_bucket": "mughtarib-feb40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240289797566:android:75512fdf6a6a69ae5455ef",
+        "android_client_info": {
+          "package_name": "com.example.mughtarib_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "240289797566-gt9q4oeepbjdgkq2bpp8g2klgm2a4na8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2HqNnsJCx9pcGAVUi_CB6b5nZYIg49cE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "240289797566-gt9q4oeepbjdgkq2bpp8g2klgm2a4na8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

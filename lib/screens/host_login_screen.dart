@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../services/auth_service.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_text_field.dart';
+import '../utils/theme.dart';
 
 class HostLoginScreen extends StatefulWidget {
+  const HostLoginScreen({super.key});
+
   @override
-  _HostLoginScreenState createState() => _HostLoginScreenState();
+  State<HostLoginScreen> createState() => _HostLoginScreenState();
 }
 
 class _HostLoginScreenState extends State<HostLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _isGoogleLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -21,74 +28,86 @@ class _HostLoginScreenState extends State<HostLoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
-        // TODO: Implement host login logic
-        await Future.delayed(Duration(seconds: 2)); // Simulated API call
-        Navigator.pushReplacementNamed(context, '/home');
-      } catch (e) {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final response = await _authService.loginHostFamily(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      if (response['success']) {
+        Navigator.pushReplacementNamed(context, '/hostHome');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+          SnackBar(content: Text(response['message'] ?? 'فشل تسجيل الدخول')),
         );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _authService.loginWithGoogle(userType: 'hostFamily');
+
+      if (result['success']) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/hostHome');
+      } else {
+        setState(() {
+          _errorMessage = result['message'];
+        });
+      }
+      } catch (e) {
+      setState(() {
+        _errorMessage = 'حدث خطأ غير متوقع';
+      });
       } finally {
-        setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF9C27B0),
-                  Color(0xFF7B1FA2),
-                ],
-              ),
-            ),
-          ),
-          SafeArea(
+      body: SafeArea(
+        child: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
               child: Form(
                 key: _formKey,
                 child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: 40),
                     Text(
-                      'تسجيل دخول العائلة المضيفة',
-                      style: GoogleFonts.cairo(
-                        fontSize: 28,
+                    'تسجيل دخول الأسرة المضيفة',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 40),
-                    TextFormField(
+                  const SizedBox(height: 32),
+                  CustomTextField(
                       controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'البريد الإلكتروني',
-                        labelStyle: GoogleFonts.cairo(color: Colors.white70),
-                        prefixIcon: Icon(Icons.email, color: Colors.white70),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white30),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white),
+                    label: 'البريد الإلكتروني',
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -100,35 +119,11 @@ class _HostLoginScreenState extends State<HostLoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 20),
-                    TextFormField(
+                  const SizedBox(height: 16),
+                  CustomTextField(
                       controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'كلمة المرور',
-                        labelStyle: GoogleFonts.cairo(color: Colors.white70),
-                        prefixIcon: Icon(Icons.lock, color: Colors.white70),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.white70,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white30),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white),
-                      obscureText: _obscurePassword,
+                    label: 'كلمة المرور',
+                    isPassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'الرجاء إدخال كلمة المرور';
@@ -139,48 +134,60 @@ class _HostLoginScreenState extends State<HostLoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Color(0xFF9C27B0),
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage!,
+                      style: TextStyle(
+                        color: theme.colorScheme.error,
+                        fontSize: 14,
                       ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  CustomButton(
+                    onPressed: _isLoading ? null : _handleLogin,
                       child: _isLoading
-                          ? CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9C27B0)),
-                            )
-                          : Text(
-                              'تسجيل الدخول',
-                              style: GoogleFonts.cairo(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                        ? const CircularProgressIndicator()
+                        : const Text('تسجيل الدخول'),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomButton(
+                    onPressed: _isGoogleLoading ? null : _handleGoogleLogin,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black87,
+                    child: _isGoogleLoading
+                        ? const CircularProgressIndicator()
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'images/google_logo.png',
+                                height: 24,
                               ),
+                              const SizedBox(width: 8),
+                              const Text('تسجيل الدخول باستخدام Google'),
+                            ],
                             ),
                     ),
-                    SizedBox(height: 20),
+                  const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/register');
+                      Navigator.pushNamed(context, '/hostRegister');
                       },
                       child: Text(
                         'ليس لديك حساب؟ سجل الآن',
-                        style: GoogleFonts.cairo(
-                          color: Colors.white,
-                          fontSize: 16,
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
                         ),
                       ),
                     ),
                   ],
-                ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

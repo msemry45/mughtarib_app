@@ -18,6 +18,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  // نوع الحساب
+  String _accountType = 'طالب';
+  final List<String> _accountTypes = ['طالب', 'أسرة مضيفة', 'مكتب عقاري'];
+
   @override
   void dispose() {
     _userIdController.dispose();
@@ -36,8 +40,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     try {
       final authService = AuthService();
-      final response = await authService.registerUser(
-        userId: _userIdController.text,
+      final response = await authService.registerStudent(
+        userID: _userIdController.text,
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
         phoneNumber: _phoneController.text,
@@ -63,6 +67,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = colorScheme.onBackground;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -77,7 +83,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   child: Icon(
                     Icons.person_add,
                     size: 80,
-                    color: Color(0xFF9C27B0),
+                    color: colorScheme.primary,
                   ),
                 ),
                 SizedBox(height: 24),
@@ -86,7 +92,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   style: GoogleFonts.cairo(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF9C27B0),
+                    color: textColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -95,7 +101,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   'قم بملء البيانات التالية للتسجيل',
                   style: GoogleFonts.cairo(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: textColor.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -104,25 +110,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   controller: _userIdController,
                   decoration: InputDecoration(
                     labelText: 'الرقم الجامعي',
-                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                   keyboardType: TextInputType.number,
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال الرقم الجامعي';
                     }
-                    if (!RegExp(r'^\d+$').hasMatch(value)) {
+                    if (!RegExp(r'^\d+').hasMatch(value)) {
                       return 'الرقم الجامعي يجب أن يحتوي على أرقام فقط';
                     }
                     return null;
@@ -133,19 +140,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   controller: _firstNameController,
                   decoration: InputDecoration(
                     labelText: 'الاسم الأول',
-                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال الاسم الأول';
@@ -158,19 +166,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   controller: _lastNameController,
                   decoration: InputDecoration(
                     labelText: 'الاسم الأخير',
-                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال الاسم الأخير';
@@ -183,20 +192,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   controller: _phoneController,
                   decoration: InputDecoration(
                     labelText: 'رقم الهاتف',
-                    prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.phone_outlined, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                   keyboardType: TextInputType.phone,
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال رقم الهاتف';
@@ -212,20 +222,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'البريد الإلكتروني',
-                    prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.email_outlined, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                   keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال البريد الإلكتروني';
@@ -242,11 +253,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'كلمة المرور',
-                    prefixIcon: Icon(Icons.lock_outline, color: Color(0xFF9C27B0)),
+                    prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.grey,
+                        color: colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -259,13 +270,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF9C27B0)),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
+                  style: TextStyle(color: textColor),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال كلمة المرور';
@@ -280,7 +292,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF9C27B0),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -292,14 +305,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                           ),
                         )
                       : Text(
-                          'تسجيل',
+                          'تسجيل حساب جديد',
                           style: GoogleFonts.cairo(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onPrimary,
                           ),
                         ),
                 ),
@@ -310,7 +324,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     Text(
                       'لديك حساب بالفعل؟',
                       style: GoogleFonts.cairo(
-                        color: Colors.grey[600],
+                        color: colorScheme.primary,
                       ),
                     ),
                     TextButton(
@@ -318,7 +332,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       child: Text(
                         'تسجيل الدخول',
                         style: GoogleFonts.cairo(
-                          color: Color(0xFF9C27B0),
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
