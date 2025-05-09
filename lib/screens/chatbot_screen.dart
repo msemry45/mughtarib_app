@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import '../services/chatbot_service.dart';
 
 class ChatbotScreen extends StatefulWidget {
+  const ChatbotScreen({Key? key}) : super(key: key);
   @override
-  _ChatbotScreenState createState() => _ChatbotScreenState();
+  ChatbotScreenState createState() => ChatbotScreenState();
 }
 
-class _ChatbotScreenState extends State<ChatbotScreen> {
+class ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
-  final ChatbotService _chatbotService = ChatbotService();
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _addBotMessage(_chatbotService.getGreeting());
+    _addBotMessage('مرحباً! أنا المساعد الذكي، كيف يمكنني مساعدتك اليوم؟');
   }
 
   void _addBotMessage(String message) {
@@ -31,7 +31,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    
     final userMessage = _messageController.text.trim();
     setState(() {
       _messages.insert(0, ChatMessage(
@@ -40,13 +39,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         timestamp: DateTime.now(),
       ));
     });
-    
     _messageController.clear();
     _scrollToBottom();
-    
     // Simulate bot typing
     Future.delayed(Duration(milliseconds: 500), () {
-      final botResponse = _chatbotService.getResponse(userMessage);
+      final botResponse = ChatBotService.getSmartReply(userMessage);
       _addBotMessage(botResponse);
     });
   }

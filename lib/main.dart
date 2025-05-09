@@ -159,6 +159,8 @@ class _MyAppState extends State<MyApp> {
                 _themeMode.value = val ? ThemeMode.dark : ThemeMode.light;
               },
             ),
+            '/support': (context) => Scaffold(appBar: AppBar(title: Text('المساعدة والدعم')), body: Center(child: Text('صفحة المساعدة والدعم'))),
+            '/about': (context) => Scaffold(appBar: AppBar(title: Text('عن التطبيق')), body: Center(child: Text('معلومات عن التطبيق'))),
             '/hostRegister': (context) => HostRegisterScreen(),
             '/agencyRegister': (context) => AgencyRegisterScreen(),
             '/chat': (context) => ChatScreen(),

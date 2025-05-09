@@ -36,9 +36,10 @@ dependencies:
   shared_preferences: ^2.2.2
   image_picker: ^1.0.7
   jwt_decoder: ^2.0.1
-  google_maps_flutter: ^2.5.0
+  google_maps_flutter: ^2.5.3
   location: ^5.0.3
   jose: ^0.3.0
+  url_launcher: ^6.0.0
   # Firebase
   firebase_core: ^2.24.2
   cloud_firestore: ^4.13.0
@@ -48,10 +49,12 @@ dependencies:
   firebase_analytics: ^10.7.0
   google_sign_in: ^6.1.5
   dialogflow_flutter_plus: ^0.0.1
+  flutter_carousel_widget: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -77,7 +80,7 @@ flutter:
     - images/mughtarib_logo.jpg
     - images/
     - assets/mughtarib-feb40-65f5014b2b6d.json
-
+    - assets/images/whatsapp.png
   #   - images/a_dot_burr.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -105,3 +108,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"

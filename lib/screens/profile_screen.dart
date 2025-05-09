@@ -252,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildSettingsItem(
             'الإشعارات',
             Icons.notifications_outlined,
-            () {},
+            () => Navigator.pushNamed(context, '/notifications'),
             colorScheme,
             textColor,
           ),
@@ -260,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildSettingsItem(
             'الخصوصية',
             Icons.lock_outline,
-            () {},
+            () => Navigator.pushNamed(context, '/settings'),
             colorScheme,
             textColor,
           ),
@@ -268,7 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildSettingsItem(
             'المساعدة والدعم',
             Icons.help_outline,
-            () {},
+            () => Navigator.pushNamed(context, '/support'),
             colorScheme,
             textColor,
           ),
@@ -276,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildSettingsItem(
             'عن التطبيق',
             Icons.info_outline,
-            () {},
+            () => Navigator.pushNamed(context, '/about'),
             colorScheme,
             textColor,
           ),

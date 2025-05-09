@@ -209,7 +209,7 @@ class FirebaseService {
   Future<List<HostFamily>> fetchHostFamilies() async {
     try {
       final snapshot = await _firestore.collection('hostFamilies').get();
-      return snapshot.docs.map((doc) => HostFamily.fromJson(doc.data())).toList();
+      return snapshot.docs.map((doc) => HostFamily.fromDocument(doc)).toList();
     } catch (e) {
       print('Error fetching host families: $e');
       return [];
@@ -220,7 +220,7 @@ class FirebaseService {
   Future<List<RealEstateOffice>> fetchRealEstateOffices() async {
     try {
       final snapshot = await _firestore.collection('realEstateOffices').get();
-      return snapshot.docs.map((doc) => RealEstateOffice.fromJson(doc.data())).toList();
+      return snapshot.docs.map((doc) => RealEstateOffice.fromDocument(doc)).toList();
     } catch (e) {
       print('Error fetching real estate offices: $e');
       return [];

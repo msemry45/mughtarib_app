@@ -28,7 +28,7 @@ class _HostRegisterScreenState extends State<HostRegisterScreen> {
   bool _isLoading = false;
   bool _isGoogleLoading = false;
   String? _errorMessage;
-  List<String> _selectedAmenities = [];
+  final List<String> _selectedAmenities = [];
 
   final List<String> _amenities = [
     'واي فاي',

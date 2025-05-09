@@ -108,4 +108,33 @@ class Property {
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
+
+  factory Property.fromDocument(Map<String, dynamic> doc, String docId) {
+    return Property(
+      id: docId,
+      title: doc['type'] ?? '',
+      description: doc['description'] ?? '',
+      type: doc['type'] ?? '',
+      status: doc['status'] ?? '',
+      price: (doc['price'] is int) ? (doc['price'] as int).toDouble() : (doc['price'] ?? 0.0),
+      currency: 'SAR',
+      address: doc['street'] ?? '',
+      city: doc['city'] ?? '',
+      location: null, // Not present in your Firestore
+      images: [], // Not present in your Firestore
+      bedrooms: doc['numberOfRooms'] ?? 0,
+      bathrooms: 0, // Not present in your Firestore
+      area: 0.0, // Not present in your Firestore
+      areaUnit: 'm²',
+      amenities: [], // Not present in your Firestore
+      ownerId: doc['managedByAdminID']?.toString() ?? '',
+      ownerType: '', // Not present in your Firestore
+      rating: 0.0, // Not present in your Firestore
+      reviewCount: 0, // Not present in your Firestore
+      isVerified: false, // Not present in your Firestore
+      availability: null, // Not present in your Firestore
+      createdAt: doc['listingDate']?.toDate() ?? DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
 }

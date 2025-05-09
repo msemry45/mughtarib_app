@@ -4,9 +4,11 @@ import '../models/host_family_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HostFamiliesScreen extends StatelessWidget {
+  const HostFamiliesScreen({Key? key}) : super(key: key);
+
   Future<List<HostFamily>> fetchHostFamilies() async {
     final snapshot = await FirebaseFirestore.instance.collection('hostFamilies').get();
-    return snapshot.docs.map((doc) => HostFamily.fromJson(doc.data())).toList();
+    return snapshot.docs.map((doc) => HostFamily.fromDocument(doc)).toList();
   }
 
   @override
@@ -32,9 +34,9 @@ class HostFamiliesScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final family = families[index];
               return ListTile(
-                title: Text(family.name, style: GoogleFonts.cairo()),
-                subtitle: Text(family.city, style: GoogleFonts.cairo()),
-                trailing: Text(family.phone, style: GoogleFonts.cairo()),
+                title: Text(family.familyName, style: GoogleFonts.cairo()),
+                subtitle: Text(family.location, style: GoogleFonts.cairo()),
+                trailing: Text(family.phoneNumber, style: GoogleFonts.cairo()),
                 onTap: () {
                   // يمكنك هنا فتح صفحة تفاصيل الأسرة
                 },

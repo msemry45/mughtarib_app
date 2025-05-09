@@ -6,44 +6,16 @@ class StudentLoginScreen extends StatefulWidget {
   const StudentLoginScreen({Key? key}) : super(key: key);
 
   @override
-  _StudentLoginScreenState createState() => _StudentLoginScreenState();
+  StudentLoginScreenState createState() => StudentLoginScreenState();
 }
 
-class _StudentLoginScreenState extends State<StudentLoginScreen> {
+class StudentLoginScreenState extends State<StudentLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _studentIdController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   final AuthService _authService = AuthService();
-
-  // Cache commonly used styles
-  final _titleStyle = GoogleFonts.cairo(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
-  );
-
-  final _inputDecoration = InputDecoration(
-    labelStyle: GoogleFonts.cairo(color: Colors.white70),
-    enabledBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.white30),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.white),
-      borderRadius: BorderRadius.circular(12),
-    ),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    // Preload Google Fonts
-    GoogleFonts.pendingFonts([
-      GoogleFonts.cairo(),
-    ]);
-  }
 
   @override
   void dispose() {
@@ -54,15 +26,23 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
+    
     setState(() => _isLoading = true);
+    
     try {
-      final authService = AuthService();
-      final response = await authService.loginStudent(
-        email: _studentIdController.text,
-        password: _passwordController.text,
+      final response = await _authService.loginStudent(
+        userID: _studentIdController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+
       if (response['success']) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navigate based on role
+        final role = response['role'] ?? 'student';
+        if (role.contains('Admin')) {
+          Navigator.pushReplacementNamed(context, '/adminHome');
+        } else {
+          Navigator.pushReplacementNamed(context, '/studentHome');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response['message'] ?? 'فشل تسجيل الدخول')),
@@ -70,7 +50,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول')),
+        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول: ${e.toString()}')),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -80,7 +60,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textColor = colorScheme.onBackground;
+    
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
@@ -89,19 +69,19 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
           style: GoogleFonts.cairo(
             color: colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
-              ),
-            ),
+          ),
+        ),
         backgroundColor: colorScheme.primary,
         centerTitle: true,
-          ),
+      ),
       body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                 SizedBox(height: 32),
                 Center(
                   child: Image.asset(
@@ -123,92 +103,103 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                   style: GoogleFonts.cairo(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    color: colorScheme.onBackground,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 8),
-                    Text(
+                Text(
                   'يرجى تسجيل الدخول للمتابعة',
                   style: GoogleFonts.cairo(
                     fontSize: 16,
-                    color: textColor.withOpacity(0.7),
+                    color: colorScheme.onBackground.withOpacity(0.7),
                   ),
-                      textAlign: TextAlign.center,
-                    ),
+                  textAlign: TextAlign.center,
+                ),
                 SizedBox(height: 32),
-                    TextFormField(
-                      controller: _studentIdController,
+                TextFormField(
+                  controller: _studentIdController,
                   decoration: InputDecoration(
-                        labelText: 'الرقم الجامعي',
+                    labelText: 'الرقم الجامعي',
                     prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
-                      ),
-                  style: TextStyle(color: textColor),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'الرجاء إدخال الرقم الجامعي';
-                        }
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'الرجاء إدخال الرقم الجامعي';
+                    }
                     if (!RegExp(r'^\d+$').hasMatch(value)) {
                       return 'الرقم الجامعي يجب أن يحتوي على أرقام فقط';
-                        }
-                        return null;
-                      },
-                    ),
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
+                TextFormField(
+                  controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                        labelText: 'كلمة المرور',
+                    labelText: 'كلمة المرور',
                     prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
-                        suffixIcon: IconButton(
-                          icon: Icon(
+                    suffixIcon: IconButton(
+                      icon: Icon(
                         _obscurePassword ? Icons.visibility_off : Icons.visibility,
                         color: colorScheme.primary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
                       ),
-                  style: TextStyle(color: textColor),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'الرجاء إدخال كلمة المرور';
-                        }
-                        if (value.length < 6) {
-                          return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-                        }
-                        return null;
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
                       },
                     ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'الرجاء إدخال كلمة المرور';
+                    }
+                    if (value.length < 6) {
+                      return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _handleLogin,
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
                     padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isLoading
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
                       ? CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
-                            )
-                          : Text(
-                              'تسجيل الدخول',
-                              style: GoogleFonts.cairo(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                            color: colorScheme.onPrimary,
-                              ),
-                            ),
-                    ),
+                        )
+                      : Text(
+                          'تسجيل الدخول',
+                          style: GoogleFonts.cairo(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
                 SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -238,4 +229,4 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
       ),
     );
   }
-} 
+}
