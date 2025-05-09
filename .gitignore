@@ -97,3 +97,6 @@ desktop.ini
 # Git
 # ========================
 *.orig
+
+# Google Cloud credentials
+assets/mughtarib-feb40-65f5014b2b6d.json
