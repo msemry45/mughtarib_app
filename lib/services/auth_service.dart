@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../models/student_model.dart';
 
 
 class AuthService {
@@ -17,63 +18,56 @@ class AuthService {
 
   /// Login student with university ID and password (Firestore only)
   Future<Map<String, dynamic>> loginStudent({
-    required String userID,
+    required String identifier, // يمكن أن يكون رقم جامعي أو إيميل
     required String password,
   }) async {
     try {
-      // Query students collection for matching userID
-      final query = await _firestore
-          .collection('students')
-          .where('userID', isEqualTo: userID)
-          .limit(1)
-          .get();
-
-      if (query.docs.isEmpty) {
-        return {'success': false, 'message': 'الرقم الجامعي غير مسجل'};
+      QuerySnapshot query;
+      // إذا كان identifier يحتوي على @ اعتبره إيميل
+      if (identifier.contains('@')) {
+        query = await _firestore.collection('students')
+            .where('email', isEqualTo: identifier)
+            .limit(1)
+            .get();
+      } else {
+        query = await _firestore.collection('students')
+            .where('userId', isEqualTo: int.tryParse(identifier) ?? identifier)
+            .limit(1)
+            .get();
       }
 
-      final studentDoc = query.docs.first;
-      final studentData = studentDoc.data();
+      if (query.docs.isEmpty) {
+        return {'success': false, 'message': 'المستخدم غير مسجل'};
+      }
 
-      // Verify password
-      if (studentData['password'] != password) {
+      final doc = query.docs.first;
+      final student = Student.fromFirestore(doc);
+
+      // تحقق من كلمة المرور
+      if (student.password != password) {
         return {'success': false, 'message': 'كلمة المرور غير صحيحة'};
       }
 
-      // Check if email exists for Firebase Auth
-      if (studentData['email'] == null) {
-        return {'success': false, 'message': 'البريد الإلكتروني غير موجود في السجلات'};
-      }
-
-      // Sign in with email/password for Firebase Auth
-      try {
-        await _auth.signInWithEmailAndPassword(
-          email: studentData['email'],
-          password: password,
-        );
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'user-not-found') {
-          // Create Firebase auth account if doesn't exist
-          await _auth.createUserWithEmailAndPassword(
-            email: studentData['email'],
+      // تسجيل الدخول في Firebase Auth (إذا كان لديه إيميل)
+      if (student.email != null && student.email!.isNotEmpty) {
+        try {
+          await _auth.signInWithEmailAndPassword(
+            email: student.email!,
             password: password,
           );
-        } else {
-          rethrow;
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'user-not-found') {
+            await _auth.createUserWithEmailAndPassword(
+              email: student.email!,
+              password: password,
+            );
+          } else {
+            rethrow;
+          }
         }
       }
 
-      return {
-        'success': true,
-        'userData': studentData,
-        'role': studentData['role'] ?? 'student',
-        'userId': studentDoc.id,
-      };
-    } on FirebaseAuthException catch (e) {
-      String message = 'فشل تسجيل الدخول';
-      if (e.code == 'wrong-password') message = 'كلمة المرور غير صحيحة';
-      if (e.code == 'user-not-found') message = 'المستخدم غير موجود';
-      return {'success': false, 'message': message};
+      return {'success': true, 'student': student};
     } catch (e) {
       return {'success': false, 'message': 'حدث خطأ غير متوقع: ${e.toString()}'};
     }

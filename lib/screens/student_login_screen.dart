@@ -24,38 +24,32 @@ class StudentLoginScreenState extends State<StudentLoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final response = await _authService.loginStudent(
-        userID: _studentIdController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+Future<void> _handleLogin() async {
+  if (!_formKey.currentState!.validate()) return;
+  
+  setState(() => _isLoading = true);
+  
+  try {
+    final response = await _authService.loginStudent(
+      identifier: _studentIdController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
 
-      if (response['success']) {
-        // Navigate based on role
-        final role = response['role'] ?? 'student';
-        if (role.contains('Admin')) {
-          Navigator.pushReplacementNamed(context, '/adminHome');
-        } else {
-          Navigator.pushReplacementNamed(context, '/studentHome');
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'فشل تسجيل الدخول')),
-        );
-      }
-    } catch (e) {
+    if (response['success']) {
+      Navigator.pushReplacementNamed(context, '/profile');
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول: ${e.toString()}')),
+        SnackBar(content: Text(response['message'])),
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('حدث خطأ غير متوقع')),
+    );
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -120,8 +114,8 @@ class StudentLoginScreenState extends State<StudentLoginScreen> {
                 TextFormField(
                   controller: _studentIdController,
                   decoration: InputDecoration(
-                    labelText: 'الرقم الجامعي',
-                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
+                    labelText: 'البريد الإلكتروني',
+                    prefixIcon: Icon(Icons.email, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey),
@@ -131,13 +125,13 @@ class StudentLoginScreenState extends State<StudentLoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'الرجاء إدخال الرقم الجامعي';
+                      return 'الرجاء إدخال البريد الإلكتروني';
                     }
-                    if (!RegExp(r'^\d+$').hasMatch(value)) {
-                      return 'الرقم الجامعي يجب أن يحتوي على أرقام فقط';
+                    if (!value.contains('@')) {
+                      return 'الرجاء إدخال بريد إلكتروني صحيح';
                     }
                     return null;
                   },

@@ -122,124 +122,139 @@ class _PropertyScreenState extends State<PropertyScreen> with SingleTickerProvid
     return snapshot.docs.map((doc) => Property.fromDocument(doc.data() as Map<String, dynamic>, doc.id)).toList();
   }
 
-  Widget _buildPropertyCard(Property property) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // صور العقار
-          FlutterCarousel(
-            items: property.images.map((imageUrl) {
-              return Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              );
-            }).toList(),
-            options: CarouselOptions(
-              height: 200,
-              viewportFraction: 1.0,
-              autoPlay: true,
-            ),
+  Widget _buildPropertyCard(Property property, int index) {
+    final List<String> houseImages = [
+      'assets/images/house1.png',
+      'assets/images/house2.png',
+      'assets/images/house3.png',
+      'assets/images/house4.png',
+      'assets/images/house5.png',
+      'assets/images/house6.png',
+      'assets/images/house7.png',
+      'assets/images/house8.png',
+    ];
+    final String imagePath = houseImages[index % houseImages.length];
+    // إضافة الأنيميشن
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 400 + index * 80),
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 40 * (1 - value)),
+            child: child,
           ),
-          
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // العنوان والتقييم
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        property.title,
-                        style: GoogleFonts.cairo(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.amber, size: 20),
-                        Text(
-                          '${property.rating}',
-                          style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
-                        ),
-                        Text(' (${property.reviewCount})'),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                
-                // الموقع
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text(
-                      '${property.city}, ${property.address}',
-                      style: GoogleFonts.cairo(color: Colors.grey),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                
-                // المواصفات
-                Row(
-                  children: [
-                    _buildFeature(Icons.bed, '${property.bedrooms} غرف'),
-                    SizedBox(width: 16),
-                    _buildFeature(Icons.bathtub_outlined, '${property.bathrooms} حمامات'),
-                    SizedBox(width: 16),
-                    _buildFeature(Icons.square_foot, '${property.area} ${property.areaUnit}'),
-                  ],
-                ),
-                SizedBox(height: 8),
-                
-                // السعر
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${property.price} ${property.currency}',
-                      style: GoogleFonts.cairo(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PropertyDetailsScreen(property: property),
+        );
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.asset(
+                imagePath,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // العنوان والتقييم
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          property.title,
+                          style: GoogleFonts.cairo(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
-                      child: Text('عرض التفاصيل'),
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 20),
+                          Text(
+                            '${property.rating}',
+                            style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                          ),
+                          Text(' (${property.reviewCount})'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  
+                  // الموقع
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Colors.grey),
+                      SizedBox(width: 4),
+                      Text(
+                        '${property.city}, ${property.address}',
+                        style: GoogleFonts.cairo(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  
+                  // المواصفات
+                  Row(
+                    children: [
+                      _buildFeature(Icons.bed, '${property.bedrooms} غرف'),
+                      SizedBox(width: 16),
+                      _buildFeature(Icons.bathtub_outlined, '${property.bathrooms} حمامات'),
+                      SizedBox(width: 16),
+                      _buildFeature(Icons.square_foot, '${property.area} ${property.areaUnit}'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  
+                  // السعر
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${property.price} ${property.currency}',
+                        style: GoogleFonts.cairo(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PropertyDetailsScreen(property: property),
+                            ),
+                          );
+                        },
+                        child: Text('عرض التفاصيل'),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -375,7 +390,7 @@ class _PropertyScreenState extends State<PropertyScreen> with SingleTickerProvid
                       return ListView.builder(
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
-                          return _buildPropertyCard(snapshot.data![index]);
+                          return _buildPropertyCard(snapshot.data![index], index);
                         },
                       );
                     },

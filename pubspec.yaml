@@ -62,6 +62,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  integration_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -76,12 +78,14 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/images/
+    - images/
     - images/mughtarib_logo.png
     - images/mughtarib_logo.jpg
     - images/
     - assets/mughtarib-feb40-65f5014b2b6d.json
     - assets/images/whatsapp.png
-  #   - images/a_dot_burr.jpeg
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -112,4 +116,4 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "images/mughtarib_logo.jpg"

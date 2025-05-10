@@ -340,6 +340,20 @@ class _AgencyLoginScreenState extends State<AgencyLoginScreen> {
                         ? CircularProgressIndicator(color: colorScheme.onPrimary)
                         : const Text('تسجيل الدخول', style: TextStyle(fontSize: 18)),
                   ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/agencyRegister');
+                    },
+                    child: Text(
+                      'ليس لديك حساب؟ سجل مكتب جديد',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),

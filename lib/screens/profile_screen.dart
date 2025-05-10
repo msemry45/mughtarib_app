@@ -198,6 +198,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileInfo(ColorScheme colorScheme, Color textColor) {
+    String welcomeText = 'مرحباً بك';
+    if (_user != null && (_user!.firstName.isNotEmpty || _user!.lastName.isNotEmpty)) {
+      welcomeText = 'مرحباً بك، ' +
+        (_user!.firstName + ' ' + _user!.lastName).trim();
+    }
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -213,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SizedBox(height: 16),
           Text(
-            'مرحباً بك',
+            welcomeText,
             style: GoogleFonts.cairo(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -222,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            'قم بتسجيل الدخول للوصول إلى جميع الميزات',
+            _user != null ? _user!.email ?? '' : 'قم بتسجيل الدخول للوصول إلى جميع الميزات',
             style: GoogleFonts.cairo(
               color: Colors.grey,
             ),
